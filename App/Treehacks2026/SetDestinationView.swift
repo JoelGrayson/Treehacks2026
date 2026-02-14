@@ -152,7 +152,7 @@ struct SetDestinationView: View {
                                 destinationCoordinate: pinCoordinate
                             )
                         } label: {
-                            Text("Confirm Location")
+                            Text("Set Destination")
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)

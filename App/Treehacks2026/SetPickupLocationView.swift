@@ -12,112 +12,176 @@ struct SetPickupLocationView: View {
     let destinationName: String?
     let destinationCoordinate: CLLocationCoordinate2D
     
-    // Map camera centered on Stanford campus
+    @State private var searchText = ""
+    @FocusState private var isSearchFocused: Bool
+    @State private var completer = AddressSearchCompleter()
+    @State private var isPinningOnMap = true
+    @State private var pinCoordinate = stanfordCenter
     @State private var cameraPosition: MapCameraPosition = .region(
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 37.42871908539299, longitude: -122.17590176790549),
-            latitudinalMeters: 1000,
-            longitudinalMeters: 1000
-        )
+        MKCoordinateRegion(center: stanfordCenter, latitudinalMeters: 1000, longitudinalMeters: 1000)
     )
     
-    // Draggable pickup pin location (default: near Tresidder)
-    @State private var pickupCoordinate = CLLocationCoordinate2D(
-        latitude: 37.4243,
-        longitude: -122.1710
-    )
+    let recommendedPickups = [
+        "Tresidder",
+        "Lakeside",
+        "ESIII (SSI Entrance)",
+        "Stanford D-School"
+    ]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // MARK: - Search bar (shows destination, non-editable)
+            // MARK: - Search bar for pickup location
             HStack(spacing: 12) {
                 Image(systemName: "magnifyingglass")
                     .font(.title2)
                     .foregroundColor(.black)
                 
-                Text(destinationName ?? "Pinned location")
+                TextField("Type pickup location", text: $searchText)
                     .font(.body)
-                    .foregroundColor(.black)
-                
-                Spacer()
+                    .focused($isSearchFocused)
+                    .onChange(of: searchText) { _, newValue in
+                        completer.updateSearch(query: newValue)
+                    }
             }
             .padding(.horizontal, 16)
             .frame(height: 49)
             .background(Color(.systemGray5))
             .clipShape(Capsule())
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 24)
             
-            // "Tap and hold to drag" instruction
-            Text("Tap and hold to drag")
-                .font(.subheadline)
-                .foregroundColor(.black)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.horizontal, 24)
-                .padding(.top, 8)
-            
-            // MARK: - Map
-            Map(position: $cameraPosition) {
-                // Destination marker
-                Annotation(destinationName ?? "Destination", coordinate: destinationCoordinate) {
-                    VStack(spacing: 2) {
-                        if let name = destinationName {
-                            Text(name)
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(Color(.systemGray5))
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
+            // MARK: - "or set pin on map" / Cancel
+            HStack(spacing: 6) {
+                Spacer()
+                
+                if isPinningOnMap {
+                    Button(action: {
+                        isPinningOnMap = false
+                        isSearchFocused = true
+                    }) {
+                        Text("Cancel")
+                            .font(.body)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(.systemGray5))
+                    .clipShape(Capsule())
+                } else {
+                    Text("or")
+                        .font(.body)
+                    
+                    Button(action: {
+                        isPinningOnMap = true
+                        isSearchFocused = false
+                    }) {
+                        HStack(spacing: 4) {
+                            Text("set pin on map")
+                                .font(.body)
+                            Image(systemName: "mappin")
+                                .font(.body)
                         }
-                        
-                        Circle()
-                            .fill(.blue)
-                            .frame(width: 20, height: 20)
-                            .overlay(
-                                Circle()
-                                    .fill(.white)
-                                    .frame(width: 8, height: 8)
-                            )
                     }
-                }
-                
-                // Draggable pickup location pin
-                Annotation("Pickup Location", coordinate: pickupCoordinate) {
-                    VStack(spacing: 2) {
-                        Text("Pickup Location")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                        
-                        Image(systemName: "mappin.circle.fill")
-                            .font(.title)
-                            .foregroundColor(.pink)
-                        
-                        Circle()
-                            .fill(.blue)
-                            .frame(width: 20, height: 20)
-                            .overlay(
-                                Circle()
-                                    .fill(.white)
-                                    .frame(width: 8, height: 8)
-                            )
-                    }
-                }
-                
-                // Car image near pickup
-                Annotation("Car", coordinate: CLLocationCoordinate2D(latitude: 37.4260, longitude: -122.1755)) {
-                    Image("Car")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 56)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(.systemGray5))
+                    .clipShape(Capsule())
                 }
             }
-            .mapStyle(.standard)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.top, 12)
+            .padding(.horizontal, 24)
+            .padding(.top, 8)
+            
+            // MARK: - Content area
+            if isPinningOnMap {
+                // Fixed center pin -- pan the map to move it
+                Map(position: $cameraPosition)
+                    .mapStyle(.standard)
+                    .onMapCameraChange { context in
+                        pinCoordinate = context.camera.centerCoordinate
+                    }
+                    .overlay {
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.largeTitle)
+                            .foregroundColor(.red)
+                            .offset(y: -15)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.top, 12)
+                    .overlay(alignment: .bottom) {
+                        Button {
+                            // TODO: Proceed to next step with pinCoordinate as pickup
+                        } label: {
+                            Text("Set Pickup Location")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(.black)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .padding(.horizontal, 24)
+                                .padding(.bottom, 24)
+                        }
+                    }
+            } else if searchText.isEmpty {
+                Text("Recommended Pickups")
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 24)
+                
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(recommendedPickups, id: \.self) { pickup in
+                        Button {
+                            // TODO: Proceed to next step with this pickup name
+                        } label: {
+                            Text(pickup)
+                                .font(.subheadline)
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 20)
+                                .padding(.horizontal, 24)
+                        }
+                    }
+                }
+                .padding(.top, 8)
+                
+                Spacer()
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(completer.results, id: \.self) { result in
+                            Button {
+                                // TODO: Proceed to next step with result.title as pickup
+                            } label: {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(result.title)
+                                        .font(.subheadline)
+                                        .foregroundColor(.black)
+                                    
+                                    if !result.subtitle.isEmpty {
+                                        Text(result.subtitle)
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 14)
+                                .padding(.horizontal, 24)
+                            }
+                        }
+                    }
+                }
+                .padding(.top, 12)
+                
+                Spacer()
+            }
         }
         .padding(.top, 8)
         .navigationTitle("Set Pickup Location")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            if !isPinningOnMap {
+                isSearchFocused = true
+            }
+        }
     }
 }
 
