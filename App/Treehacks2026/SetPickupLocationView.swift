@@ -95,8 +95,8 @@ struct SetPickupLocationView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         ForEach(completer.results, id: \.self) { result in
-                            Button {
-                                // TODO: Proceed to next step with result.title as pickup
+                            NavigationLink {
+                                WaitingForCarView(destinationName: destinationName, pickupName: result.title)
                             } label: {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(result.title)
@@ -135,8 +135,8 @@ struct SetPickupLocationView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.top, 12)
                     .overlay(alignment: .bottom) {
-                        Button {
-                            // TODO: Proceed to next step with pinCoordinate as pickup
+                        NavigationLink {
+                            WaitingForCarView(destinationName: destinationName, pickupName: nil)
                         } label: {
                             Text("Set Pickup Location")
                                 .font(.headline)
@@ -158,8 +158,8 @@ struct SetPickupLocationView: View {
                 
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(recommendedPickups, id: \.self) { pickup in
-                        Button {
-                            // TODO: Proceed to next step with this pickup name
+                        NavigationLink {
+                            WaitingForCarView(destinationName: destinationName, pickupName: pickup)
                         } label: {
                             Text(pickup)
                                 .font(.subheadline)
