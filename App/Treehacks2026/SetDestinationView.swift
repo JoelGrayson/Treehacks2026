@@ -115,43 +115,39 @@ struct SetDestinationView: View {
             
             // MARK: - Content area
             if isPinningOnMap {
-                // Map with tappable pin placement
-                MapReader { proxy in
-                    Map(position: $cameraPosition) {
-                        Annotation("Destination", coordinate: pinCoordinate) {
-                            Image(systemName: "mappin.circle.fill")
-                                .font(.largeTitle)
-                                .foregroundColor(.red)
-                        }
-                        .annotationTitles(.hidden)
-                    }
+                // Fixed center pin -- pan the map to move it
+                Map(position: $cameraPosition)
                     .mapStyle(.standard)
-                    .onTapGesture { screenPoint in
-                        if let coordinate = proxy.convert(screenPoint, from: .local) {
-                            pinCoordinate = coordinate
+                    .onMapCameraChange { context in
+                        pinCoordinate = context.camera.centerCoordinate
+                    }
+                    .overlay {
+                        // Pin fixed to center of map
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.largeTitle)
+                            .foregroundColor(.red)
+                            .offset(y: -15) // offset so pin tip lands on center
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.top, 12)
+                    .overlay(alignment: .bottom) {
+                        NavigationLink {
+                            SetPickupLocationView(
+                                destinationName: nil,
+                                destinationCoordinate: pinCoordinate
+                            )
+                        } label: {
+                            Text("Confirm Location")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(.black)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .padding(.horizontal, 24)
+                                .padding(.bottom, 24)
                         }
                     }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.top, 12)
-                .overlay(alignment: .bottom) {
-                    NavigationLink {
-                        SetPickupLocationView(
-                            destinationName: nil,
-                            destinationCoordinate: pinCoordinate
-                        )
-                    } label: {
-                        Text("Confirm Location")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(.black)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .padding(.horizontal, 24)
-                            .padding(.bottom, 24)
-                    }
-                }
             } else if searchText.isEmpty {
                 Text("Recommended Destinations")
                     .font(.body)
