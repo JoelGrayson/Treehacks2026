@@ -90,7 +90,36 @@ struct SetPickupLocationView: View {
             .padding(.top, 8)
             
             // MARK: - Content area
-            if isPinningOnMap {
+            if !searchText.isEmpty {
+                // Search results take priority when typing
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(completer.results, id: \.self) { result in
+                            Button {
+                                // TODO: Proceed to next step with result.title as pickup
+                            } label: {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(result.title)
+                                        .font(.subheadline)
+                                        .foregroundColor(.black)
+                                    
+                                    if !result.subtitle.isEmpty {
+                                        Text(result.subtitle)
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 14)
+                                .padding(.horizontal, 24)
+                            }
+                        }
+                    }
+                }
+                .padding(.top, 12)
+                
+                Spacer()
+            } else if isPinningOnMap {
                 // Fixed center pin -- pan the map to move it
                 Map(position: $cameraPosition)
                     .mapStyle(.standard)
@@ -142,34 +171,6 @@ struct SetPickupLocationView: View {
                     }
                 }
                 .padding(.top, 8)
-                
-                Spacer()
-            } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        ForEach(completer.results, id: \.self) { result in
-                            Button {
-                                // TODO: Proceed to next step with result.title as pickup
-                            } label: {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(result.title)
-                                        .font(.subheadline)
-                                        .foregroundColor(.black)
-                                    
-                                    if !result.subtitle.isEmpty {
-                                        Text(result.subtitle)
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
-                                    }
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 14)
-                                .padding(.horizontal, 24)
-                            }
-                        }
-                    }
-                }
-                .padding(.top, 12)
                 
                 Spacer()
             }

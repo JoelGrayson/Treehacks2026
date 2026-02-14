@@ -129,68 +129,8 @@ struct SetDestinationView: View {
             .padding(.top, 8)
             
             // MARK: - Content area
-            if isPinningOnMap {
-                // Fixed center pin -- pan the map to move it
-                Map(position: $cameraPosition)
-                    .mapStyle(.standard)
-                    .onMapCameraChange { context in
-                        pinCoordinate = context.camera.centerCoordinate
-                    }
-                    .overlay {
-                        // Pin fixed to center of map
-                        Image(systemName: "mappin.circle.fill")
-                            .font(.largeTitle)
-                            .foregroundColor(.red)
-                            .offset(y: -15) // offset so pin tip lands on center
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(.top, 12)
-                    .overlay(alignment: .bottom) {
-                        NavigationLink {
-                            SetPickupLocationView(
-                                destinationName: nil,
-                                destinationCoordinate: pinCoordinate
-                            )
-                        } label: {
-                            Text("Set Destination")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(.black)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                .padding(.horizontal, 24)
-                                .padding(.bottom, 24)
-                        }
-                    }
-            } else if searchText.isEmpty {
-                Text("Recommended Destinations")
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 24)
-                
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(recommendedDestinations, id: \.self) { destination in
-                        NavigationLink {
-                            SetPickupLocationView(
-                                destinationName: destination,
-                                destinationCoordinate: stanfordCenter
-                            )
-                        } label: {
-                            Text(destination)
-                                .font(.subheadline)
-                                .foregroundColor(.black)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 20)
-                                .padding(.horizontal, 24)
-                        }
-                    }
-                }
-                .padding(.top, 8)
-                
-                Spacer()
-            } else {
+            if !searchText.isEmpty {
+                // Search results take priority when typing
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         ForEach(completer.results, id: \.self) { result in
@@ -219,6 +159,66 @@ struct SetDestinationView: View {
                     }
                 }
                 .padding(.top, 12)
+                
+                Spacer()
+            } else if isPinningOnMap {
+                // Fixed center pin -- pan the map to move it
+                Map(position: $cameraPosition)
+                    .mapStyle(.standard)
+                    .onMapCameraChange { context in
+                        pinCoordinate = context.camera.centerCoordinate
+                    }
+                    .overlay {
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.largeTitle)
+                            .foregroundColor(.red)
+                            .offset(y: -15)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.top, 12)
+                    .overlay(alignment: .bottom) {
+                        NavigationLink {
+                            SetPickupLocationView(
+                                destinationName: nil,
+                                destinationCoordinate: pinCoordinate
+                            )
+                        } label: {
+                            Text("Confirm Location")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(.black)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .padding(.horizontal, 24)
+                                .padding(.bottom, 24)
+                        }
+                    }
+            } else {
+                Text("Recommended Destinations")
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 24)
+                
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(recommendedDestinations, id: \.self) { destination in
+                        NavigationLink {
+                            SetPickupLocationView(
+                                destinationName: destination,
+                                destinationCoordinate: stanfordCenter
+                            )
+                        } label: {
+                            Text(destination)
+                                .font(.subheadline)
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 20)
+                                .padding(.horizontal, 24)
+                        }
+                    }
+                }
+                .padding(.top, 8)
                 
                 Spacer()
             }
