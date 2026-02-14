@@ -114,8 +114,8 @@ struct SetDestinationView: View {
                 
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(recommendedDestinations, id: \.self) { destination in
-                        Button {
-                            // TODO: Handle destination selection
+                        NavigationLink {
+                            SetPickupLocationView(destinationName: destination)
                         } label: {
                             Text(destination)
                                 .font(.subheadline)
@@ -131,8 +131,8 @@ struct SetDestinationView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         ForEach(completer.results, id: \.self) { result in
-                            Button {
-                                // TODO: Handle search result selection
+                            NavigationLink {
+                                SetPickupLocationView(destinationName: result.title)
                             } label: {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(result.title)
