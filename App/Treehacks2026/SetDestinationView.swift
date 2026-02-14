@@ -47,10 +47,18 @@ class AddressSearchCompleter: NSObject, MKLocalSearchCompleterDelegate {
 
 // MARK: - Set Destination View
 
+// Stanford campus center (reusable)
+let stanfordCenter = CLLocationCoordinate2D(latitude: 37.42871908539299, longitude: -122.17590176790549)
+
 struct SetDestinationView: View {
     @State private var searchText = ""
     @FocusState private var isSearchFocused: Bool
     @State private var completer = AddressSearchCompleter()
+    @State private var isPinningOnMap = false
+    @State private var pinCoordinate = stanfordCenter
+    @State private var cameraPosition: MapCameraPosition = .region(
+        MKCoordinateRegion(center: stanfordCenter, latitudinalMeters: 1000, longitudinalMeters: 1000)
+    )
     
     let recommendedDestinations = [
         "Tresidder",
@@ -87,7 +95,8 @@ struct SetDestinationView: View {
                     .font(.body)
                 
                 Button(action: {
-                    // TODO: Present map for dropping a pin
+                    isPinningOnMap.toggle()
+                    isSearchFocused = false
                 }) {
                     HStack(spacing: 4) {
                         Text("set pin on map")
@@ -104,8 +113,46 @@ struct SetDestinationView: View {
             .padding(.horizontal, 24)
             .padding(.top, 8)
             
-            // MARK: - Results or Recommended Destinations
-            if searchText.isEmpty {
+            // MARK: - Content area
+            if isPinningOnMap {
+                // Map with tappable pin placement
+                MapReader { proxy in
+                    Map(position: $cameraPosition) {
+                        Annotation("Destination", coordinate: pinCoordinate) {
+                            Image(systemName: "mappin.circle.fill")
+                                .font(.largeTitle)
+                                .foregroundColor(.red)
+                        }
+                        .annotationTitles(.hidden)
+                    }
+                    .mapStyle(.standard)
+                    .onTapGesture { screenPoint in
+                        if let coordinate = proxy.convert(screenPoint, from: .local) {
+                            pinCoordinate = coordinate
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.top, 12)
+                .overlay(alignment: .bottom) {
+                    NavigationLink {
+                        SetPickupLocationView(
+                            destinationName: nil,
+                            destinationCoordinate: pinCoordinate
+                        )
+                    } label: {
+                        Text("Confirm Location")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(.black)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 24)
+                    }
+                }
+            } else if searchText.isEmpty {
                 Text("Recommended Destinations")
                     .font(.body)
                     .fontWeight(.medium)
@@ -115,7 +162,10 @@ struct SetDestinationView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(recommendedDestinations, id: \.self) { destination in
                         NavigationLink {
-                            SetPickupLocationView(destinationName: destination)
+                            SetPickupLocationView(
+                                destinationName: destination,
+                                destinationCoordinate: stanfordCenter
+                            )
                         } label: {
                             Text(destination)
                                 .font(.subheadline)
@@ -127,12 +177,17 @@ struct SetDestinationView: View {
                     }
                 }
                 .padding(.top, 8)
+                
+                Spacer()
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         ForEach(completer.results, id: \.self) { result in
                             NavigationLink {
-                                SetPickupLocationView(destinationName: result.title)
+                                SetPickupLocationView(
+                                    destinationName: result.title,
+                                    destinationCoordinate: stanfordCenter
+                                )
                             } label: {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(result.title)
@@ -153,9 +208,9 @@ struct SetDestinationView: View {
                     }
                 }
                 .padding(.top, 12)
+                
+                Spacer()
             }
-            
-            Spacer()
         }
         .padding(.top, 8)
         .navigationTitle("Set Destination")

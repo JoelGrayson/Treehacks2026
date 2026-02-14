@@ -9,7 +9,8 @@ import SwiftUI
 import MapKit
 
 struct SetPickupLocationView: View {
-    let destinationName: String
+    let destinationName: String?
+    let destinationCoordinate: CLLocationCoordinate2D
     
     // Map camera centered on Stanford campus
     @State private var cameraPosition: MapCameraPosition = .region(
@@ -34,7 +35,7 @@ struct SetPickupLocationView: View {
                     .font(.title2)
                     .foregroundColor(.black)
                 
-                Text(destinationName)
+                Text(destinationName ?? "Pinned location")
                     .font(.body)
                     .foregroundColor(.black)
                 
@@ -57,15 +58,17 @@ struct SetPickupLocationView: View {
             // MARK: - Map
             Map(position: $cameraPosition) {
                 // Destination marker
-                Annotation(destinationName, coordinate: CLLocationCoordinate2D(latitude: 37.4225, longitude: -122.1749)) {
+                Annotation(destinationName ?? "Destination", coordinate: destinationCoordinate) {
                     VStack(spacing: 2) {
-                        Text(destinationName)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(Color(.systemGray5))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        if let name = destinationName {
+                            Text(name)
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color(.systemGray5))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
                         
                         Circle()
                             .fill(.blue)
@@ -120,6 +123,9 @@ struct SetPickupLocationView: View {
 
 #Preview {
     NavigationStack {
-        SetPickupLocationView(destinationName: "Huang")
+        SetPickupLocationView(
+            destinationName: "Huang",
+            destinationCoordinate: CLLocationCoordinate2D(latitude: 37.4275, longitude: -122.1697)
+        )
     }
 }
