@@ -21,8 +21,7 @@ struct ContentView: View {
                     
                     // Search bar
                     NavigationLink {
-                        // TODO: Navigate to Set Destination screen
-                        Text("Set Destination")
+                        SetDestinationView()
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: "magnifyingglass")
