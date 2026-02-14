@@ -65,10 +65,11 @@ struct WaitingForCarView: View {
         Map(position: $cameraPosition) {
             // User location dot
             Annotation("You", coordinate: stanfordCenter) {
-                ZStack {
-                    Circle().fill(.blue).frame(width: 22, height: 22)
-                    Circle().fill(.white).frame(width: 9, height: 9)
-                }
+                Circle()
+                    .fill(.blue)
+                    .frame(width: 28, height: 28)
+                    .overlay(Circle().stroke(.white, lineWidth: 4))
+                    .shadow(radius: 4)
             }
             .annotationTitles(.hidden)
             
