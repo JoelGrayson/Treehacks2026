@@ -73,7 +73,7 @@ struct SetDestinationView: View {
             HStack(spacing: 12) {
                 Image(systemName: "magnifyingglass")
                     .font(.title2)
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                 
                 TextField("Type building name/address", text: $searchText)
                     .font(.body)
@@ -143,7 +143,7 @@ struct SetDestinationView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(result.title)
                                         .font(.subheadline)
-                                        .foregroundColor(.black)
+                                        .foregroundColor(.primary)
                                     
                                     if !result.subtitle.isEmpty {
                                         Text(result.subtitle)
@@ -163,7 +163,15 @@ struct SetDestinationView: View {
                 Spacer()
             } else if isPinningOnMap {
                 // Fixed center pin -- pan the map to move it
-                Map(position: $cameraPosition)
+                Map(position: $cameraPosition) {
+                    Annotation("You", coordinate: stanfordCenter) {
+                        ZStack {
+                            Circle().fill(.blue).frame(width: 22, height: 22)
+                            Circle().fill(.white).frame(width: 9, height: 9)
+                        }
+                    }
+                    .annotationTitles(.hidden)
+                }
                     .mapStyle(.standard)
                     .onMapCameraChange { context in
                         pinCoordinate = context.camera.centerCoordinate
@@ -211,7 +219,7 @@ struct SetDestinationView: View {
                         } label: {
                             Text(destination)
                                 .font(.subheadline)
-                                .foregroundColor(.black)
+                                .foregroundColor(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.vertical, 20)
                                 .padding(.horizontal, 24)

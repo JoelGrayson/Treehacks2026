@@ -26,10 +26,10 @@ struct ContentView: View {
                         HStack(spacing: 12) {
                             Image(systemName: "magnifyingglass")
                                 .font(.title2)
-                                .foregroundColor(.black)
+                                .foregroundColor(.primary)
                             
                             Text("Where do you want to go?")
-                                .foregroundColor(.black)
+                                .foregroundColor(.primary)
                                 .font(.body)
                         }
                         .padding(.horizontal, 16)

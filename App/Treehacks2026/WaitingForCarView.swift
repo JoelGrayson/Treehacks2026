@@ -62,7 +62,16 @@ struct WaitingForCarView: View {
     // MARK: - Route Visualization (Map)
     
     private var routeVisualization: some View {
-        Map(position: $cameraPosition, interactionModes: []) {
+        Map(position: $cameraPosition) {
+            // User location dot
+            Annotation("You", coordinate: stanfordCenter) {
+                ZStack {
+                    Circle().fill(.blue).frame(width: 22, height: 22)
+                    Circle().fill(.white).frame(width: 9, height: 9)
+                }
+            }
+            .annotationTitles(.hidden)
+            
             // Destination marker
             Annotation(destinationName ?? "Destination", coordinate: destinationCoord) {
                 VStack(spacing: 2) {
@@ -166,7 +175,7 @@ struct WaitingForCarView: View {
                 } label: {
                     Text("Start Driving")
                         .font(.headline)
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(Color(.systemGray5))
@@ -196,7 +205,7 @@ struct WaitingForCarView: View {
                 } label: {
                     Text("Start New Ride")
                         .font(.headline)
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(Color(.systemGray5))
