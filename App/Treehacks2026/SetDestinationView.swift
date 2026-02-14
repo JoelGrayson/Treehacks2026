@@ -88,27 +88,42 @@ struct SetDestinationView: View {
             .clipShape(Capsule())
             .padding(.horizontal, 24)
             
-            // MARK: - "or set pin on map"
+            // MARK: - "or set pin on map" / Cancel
             HStack(spacing: 6) {
                 Spacer()
-                Text("or")
-                    .font(.body)
                 
-                Button(action: {
-                    isPinningOnMap.toggle()
-                    isSearchFocused = false
-                }) {
-                    HStack(spacing: 4) {
-                        Text("set pin on map")
-                            .font(.body)
-                        Image(systemName: "mappin")
+                if isPinningOnMap {
+                    Button(action: {
+                        isPinningOnMap = false
+                        isSearchFocused = true
+                    }) {
+                        Text("Cancel")
                             .font(.body)
                     }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(.systemGray5))
+                    .clipShape(Capsule())
+                } else {
+                    Text("or")
+                        .font(.body)
+                    
+                    Button(action: {
+                        isPinningOnMap = true
+                        isSearchFocused = false
+                    }) {
+                        HStack(spacing: 4) {
+                            Text("set pin on map")
+                                .font(.body)
+                            Image(systemName: "mappin")
+                                .font(.body)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(.systemGray5))
+                    .clipShape(Capsule())
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color(.systemGray5))
-                .clipShape(Capsule())
             }
             .padding(.horizontal, 24)
             .padding(.top, 8)
