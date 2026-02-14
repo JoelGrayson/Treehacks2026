@@ -8,7 +8,7 @@
 import SwiftUI
 import CoreLocation
 
-// Requests location permission on app launch
+// Requests location permission and starts tracking on app launch
 class LocationManager: NSObject, CLLocationManagerDelegate {
     static let shared = LocationManager()
     private let manager = CLLocationManager()
@@ -20,6 +20,15 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     
     func requestPermission() {
         manager.requestWhenInUseAuthorization()
+        manager.startUpdatingLocation()
+        manager.startUpdatingHeading()
+    }
+    
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
+            manager.startUpdatingLocation()
+            manager.startUpdatingHeading()
+        }
     }
 }
 

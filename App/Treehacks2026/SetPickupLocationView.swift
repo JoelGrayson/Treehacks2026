@@ -122,14 +122,7 @@ struct SetPickupLocationView: View {
             } else if isPinningOnMap {
                 // Fixed center pin -- pan the map to move it
                 Map(position: $cameraPosition) {
-                    Annotation("You", coordinate: stanfordCenter) {
-                        Circle()
-                            .fill(.blue)
-                            .frame(width: 28, height: 28)
-                            .overlay(Circle().stroke(.white, lineWidth: 4))
-                            .shadow(radius: 4)
-                    }
-                    .annotationTitles(.hidden)
+                    UserAnnotation()
                 }
                     .mapStyle(.standard)
                     .onMapCameraChange { context in

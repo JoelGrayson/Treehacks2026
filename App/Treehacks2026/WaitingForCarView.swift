@@ -63,15 +63,7 @@ struct WaitingForCarView: View {
     
     private var routeVisualization: some View {
         Map(position: $cameraPosition) {
-            // User location dot
-            Annotation("You", coordinate: stanfordCenter) {
-                Circle()
-                    .fill(.blue)
-                    .frame(width: 28, height: 28)
-                    .overlay(Circle().stroke(.white, lineWidth: 4))
-                    .shadow(radius: 4)
-            }
-            .annotationTitles(.hidden)
+            UserAnnotation()
             
             // Destination marker
             Annotation(destinationName ?? "Destination", coordinate: destinationCoord) {
