@@ -62,14 +62,20 @@ class MQTTManager: NSObject {
     func connect() {
         let clientID = "ios-\(UUID().uuidString.prefix(8))"
         let client = CocoaMQTT(clientID: clientID, host: brokerHost, port: brokerPort)
+        client.username = Secrets.brokerUsername
+        client.password = Secrets.brokerPassword
         client.keepAlive = 60
         client.delegate = self
         client.autoReconnect = true
         client.autoReconnectTimeInterval = 3
         
         mqtt = client
-        _ = client.connect()
-        print("[MQTT] Connecting to \(brokerHost):\(brokerPort)...")
+        
+        // Enable CocoaMQTT's built-in protocol-level debug logging
+        //CocoaMQTTLogger.logger.minNLogLevel = .debug
+        
+        let result = client.connect()
+        print("[MQTT] Connecting to \(brokerHost):\(brokerPort) as \(Secrets.brokerUsername)... connect() returned \(result)")
     }
     
     // MARK: - Publish order
@@ -101,7 +107,7 @@ class MQTTManager: NSObject {
         }
         
         mqtt?.publish(MQTTTopic.commandCar, withString: jsonString, qos: .qos1, retained: false)
-        print("[MQTT] Published order to \(MQTTTopic.commandCar): \(jsonString)")
+        print("[MQTT] Published order to \(MQTTTopic.commandCar): \(jsonString) under user \(Secrets.brokerUsername)")
     }
     
     // MARK: - Disconnect
@@ -115,15 +121,16 @@ class MQTTManager: NSObject {
 
 extension MQTTManager: CocoaMQTTDelegate {
     func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
+        print("[MQTT] CONNACK received: \(ack)")
         if ack == .accept {
             isConnected = true
-            print("[MQTT] Connected successfully")
+            print("[MQTT] Connected successfully! Client ID: \(mqtt.clientID)")
             
             // Subscribe to GPS info from the car
             mqtt.subscribe(MQTTTopic.gpsInfo, qos: .qos1)
-            print("[MQTT] Subscribed to \(MQTTTopic.gpsInfo)")
+            print("[MQTT] Subscribing to \(MQTTTopic.gpsInfo)")
         } else {
-            print("[MQTT] Connection rejected: \(ack)")
+            print("[MQTT] Connection REJECTED: \(ack)")
         }
     }
     
@@ -144,11 +151,11 @@ extension MQTTManager: CocoaMQTTDelegate {
     }
     
     func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
-        // Published successfully
+        print("[MQTT] didPublishMessage callback - topic: \(message.topic), id: \(id)")
     }
     
     func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {
-        // Publish acknowledged
+        print("[MQTT] PUBACK received from broker for message id: \(id) ✓")
     }
     
     func mqtt(_ mqtt: CocoaMQTT, didSubscribeTopics success: NSDictionary, failed: [String]) {

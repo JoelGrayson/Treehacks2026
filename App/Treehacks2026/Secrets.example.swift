@@ -8,6 +8,8 @@
 
 import Foundation
 
-enum Secrets {
+/*enum Secrets {
     static let brokerHost = "YOUR_GCE_IP_HERE"
-}
+    static let brokerUsername = "YOUR_USERNAME"
+    static let brokerPassword = "YOUR_PASSWORD"
+}*/
