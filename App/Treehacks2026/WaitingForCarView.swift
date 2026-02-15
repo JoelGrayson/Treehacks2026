@@ -36,6 +36,7 @@ struct WaitingForCarView: View {
     let pickupCoord = CLLocationCoordinate2D(latitude: 37.4260, longitude: -122.1740)
     
     @State private var carCoord = CLLocationCoordinate2D(latitude: 37.4280, longitude: -122.1760)
+    @State private var route: MKRoute?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -56,6 +57,9 @@ struct WaitingForCarView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear {
             startApproachingTimer()
+        }
+        .task {
+            await fetchRoute()
         }
     }
     
@@ -102,9 +106,11 @@ struct WaitingForCarView: View {
             }
             .annotationTitles(.hidden)
             
-            // Route line
-            MapPolyline(coordinates: [destinationCoord, pickupCoord])
-                .stroke(.blue, lineWidth: 4)
+            // Route line (real driving route)
+            if let route {
+                MapPolyline(route.polyline)
+                    .stroke(.blue, lineWidth: 4)
+            }
         }
         .mapStyle(.standard)
     }
@@ -205,6 +211,20 @@ struct WaitingForCarView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
+        }
+    }
+    
+    // MARK: - Fetch driving route
+    
+    private func fetchRoute() async {
+        let request = MKDirections.Request()
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: pickupCoord))
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: destinationCoord))
+        request.transportType = .automobile
+        
+        let directions = MKDirections(request: request)
+        if let response = try? await directions.calculate() {
+            route = response.routes.first
         }
     }
     
