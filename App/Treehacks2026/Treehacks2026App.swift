@@ -39,6 +39,7 @@ struct Treehacks2026App: App {
             ContentView()
                 .onAppear {
                     LocationManager.shared.requestPermission()
+                    MQTTManager.shared.connect()
                 }
         }
     }

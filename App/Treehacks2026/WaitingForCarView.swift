@@ -22,6 +22,8 @@ enum RidePhase {
 struct WaitingForCarView: View {
     let destinationName: String?
     let pickupName: String?
+    let destinationCoord: CLLocationCoordinate2D
+    let pickupCoord: CLLocationCoordinate2D
     
     @State private var phase: RidePhase = .approaching
     @Environment(\.dismiss) private var dismiss
@@ -30,10 +32,6 @@ struct WaitingForCarView: View {
     @State private var cameraPosition: MapCameraPosition = .region(
         MKCoordinateRegion(center: stanfordCenter, latitudinalMeters: 800, longitudinalMeters: 800)
     )
-    
-    // Coordinates for destination, pickup, and car
-    let destinationCoord = CLLocationCoordinate2D(latitude: 37.4243, longitude: -122.1710)
-    let pickupCoord = CLLocationCoordinate2D(latitude: 37.4260, longitude: -122.1740)
     
     @State private var carCoord = CLLocationCoordinate2D(latitude: 37.4280, longitude: -122.1760)
     @State private var route: MKRoute?
@@ -56,7 +54,25 @@ struct WaitingForCarView: View {
         .navigationTitle("")
         .navigationBarBackButtonHidden(true)
         .onAppear {
+            // Send order via MQTT
+            MQTTManager.shared.sendOrder(
+                pickupCoordinate: pickupCoord,
+                pickupName: pickupName,
+                destinationCoordinate: destinationCoord,
+                destinationName: destinationName
+            )
+            
+            // Initialize car position at pickup while waiting for GPS
+            carCoord = pickupCoord
+            
             startApproachingTimer()
+        }
+        .onChange(of: MQTTManager.shared.carCoordinate?.latitude) { _, _ in
+            if let newCoord = MQTTManager.shared.carCoordinate {
+                withAnimation(.easeInOut(duration: 1.0)) {
+                    carCoord = newCoord
+                }
+            }
         }
         .task {
             await fetchRoute()
@@ -247,6 +263,11 @@ struct WaitingForCarView: View {
 
 #Preview {
     NavigationStack {
-        WaitingForCarView(destinationName: "Tresidder", pickupName: "Huang")
+        WaitingForCarView(
+            destinationName: "Tresidder",
+            pickupName: "Huang",
+            destinationCoord: CLLocationCoordinate2D(latitude: 37.4243, longitude: -122.1710),
+            pickupCoord: CLLocationCoordinate2D(latitude: 37.4260, longitude: -122.1740)
+        )
     }
 }

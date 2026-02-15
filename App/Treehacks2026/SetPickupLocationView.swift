@@ -96,7 +96,12 @@ struct SetPickupLocationView: View {
                     VStack(alignment: .leading, spacing: 0) {
                         ForEach(completer.results, id: \.self) { result in
                             NavigationLink {
-                                WaitingForCarView(destinationName: destinationName, pickupName: result.title)
+                                WaitingForCarView(
+                                    destinationName: destinationName,
+                                    pickupName: result.title,
+                                    destinationCoord: destinationCoordinate,
+                                    pickupCoord: pinCoordinate
+                                )
                             } label: {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(result.title)
@@ -138,7 +143,12 @@ struct SetPickupLocationView: View {
                     .padding(.top, 12)
                     .overlay(alignment: .bottom) {
                         NavigationLink {
-                            WaitingForCarView(destinationName: destinationName, pickupName: nil)
+                            WaitingForCarView(
+                                destinationName: destinationName,
+                                pickupName: nil,
+                                destinationCoord: destinationCoordinate,
+                                pickupCoord: pinCoordinate
+                            )
                         } label: {
                             Text("Set Pickup Location")
                                 .font(.headline)
@@ -161,7 +171,12 @@ struct SetPickupLocationView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(recommendedPickups, id: \.self) { pickup in
                         NavigationLink {
-                            WaitingForCarView(destinationName: destinationName, pickupName: pickup)
+                            WaitingForCarView(
+                                destinationName: destinationName,
+                                pickupName: pickup,
+                                destinationCoord: destinationCoordinate,
+                                pickupCoord: pinCoordinate
+                            )
                         } label: {
                             Text(pickup)
                                 .font(.subheadline)

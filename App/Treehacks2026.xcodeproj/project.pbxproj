@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		38878FEA2F415FCE00E2CEE6 /* CocoaMQTT in Frameworks */ = {isa = PBXBuildFile; productRef = 38878FE92F415FCE00E2CEE6 /* CocoaMQTT */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		381208C62F40580300D182BB /* Treehacks2026.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Treehacks2026.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				38878FEA2F415FCE00E2CEE6 /* CocoaMQTT in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = Treehacks2026;
 			packageProductDependencies = (
+				38878FE92F415FCE00E2CEE6 /* CocoaMQTT */,
 			);
 			productName = Treehacks2026;
 			productReference = 381208C62F40580300D182BB /* Treehacks2026.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 381208BD2F40580300D182BB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				38878FE82F415FCE00E2CEE6 /* XCRemoteSwiftPackageReference "CocoaMQTT" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 381208C72F40580300D182BB /* Products */;
 			projectDirPath = "";
@@ -334,6 +343,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		38878FE82F415FCE00E2CEE6 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/emqx/CocoaMQTT.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.9;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		38878FE92F415FCE00E2CEE6 /* CocoaMQTT */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 38878FE82F415FCE00E2CEE6 /* XCRemoteSwiftPackageReference "CocoaMQTT" */;
+			productName = CocoaMQTT;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 381208BE2F40580300D182BB /* Project object */;
 }
