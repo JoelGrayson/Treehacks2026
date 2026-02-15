@@ -6,9 +6,13 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct ContentView: View {
     @State private var searchText = ""
+    @State private var cameraPosition: MapCameraPosition = .region(
+        MKCoordinateRegion(center: stanfordCenter, latitudinalMeters: 1000, longitudinalMeters: 1000)
+    )
     
     var body: some View {
         NavigationStack {
@@ -57,6 +61,28 @@ struct ContentView: View {
                         Text("Honda 2018 Accord")
                             .font(.subheadline)
                     }
+                    
+                    // MARK: - Car Location Map
+                    Text("Location:")
+                        .font(.subheadline)
+                    
+                    Map(position: $cameraPosition) {
+                        UserAnnotation()
+                        
+                        // Car marker from MQTT GPS data
+                        if let carCoord = MQTTManager.shared.carCoordinate {
+                            Annotation("Car", coordinate: carCoord) {
+                                Image("Car")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 56)
+                            }
+                            .annotationTitles(.hidden)
+                        }
+                    }
+                    .mapStyle(.standard)
+                    .frame(height: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 16)
