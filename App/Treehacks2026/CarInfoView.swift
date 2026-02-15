@@ -114,12 +114,65 @@ struct CarInfoView: View {
                             logRow(message: msg)
                         }
                     }
+                    
+                    Divider()
+                    
+                    // MARK: - Advanced Settings
+                    DisclosureGroup("Advanced Settings") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Button {
+                                sendTestRequest()
+                            } label: {
+                                HStack {
+                                    Image(systemName: "paperplane.fill")
+                                    Text("Send a test request")
+                                }
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(Color.blue)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                            
+                            if testRequestSent {
+                                Text("Test request sent!")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                                    .transition(.opacity)
+                            }
+                        }
+                        .padding(.top, 8)
+                    }
+                    .font(.title3)
+                    .fontWeight(.semibold)
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 16)
                 .padding(.bottom, 32)
             }
             .navigationTitle("Car Info")
+        }
+    }
+    
+    // MARK: - Test Request
+    
+    @State private var testRequestSent = false
+    
+    private func sendTestRequest() {
+        let testPayload = """
+        {"timestamp":1771161454.1520162,"pickup":{"longitude":-122.17590176790547,"latitude":37.42871908539299},"destination":{"name":"Tresidder","longitude":-122.17095100502956,"latitude":37.42469641302641}}
+        """
+        mqtt.sendRawMessage(topic: MQTTTopic.commandCar, jsonString: testPayload.trimmingCharacters(in: .whitespacesAndNewlines))
+        
+        withAnimation {
+            testRequestSent = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            withAnimation {
+                testRequestSent = false
+            }
         }
     }
     

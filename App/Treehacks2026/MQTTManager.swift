@@ -124,6 +124,13 @@ class MQTTManager: NSObject {
         print("[MQTT] Published order to \(MQTTTopic.commandCar): \(jsonString) under user \(Secrets.brokerUsername)")
     }
     
+    // MARK: - Publish raw JSON string
+    
+    func sendRawMessage(topic: String, jsonString: String) {
+        mqtt?.publish(topic, withString: jsonString, qos: .qos1, retained: false)
+        print("[MQTT] Published raw message to \(topic): \(jsonString)")
+    }
+    
     // MARK: - Disconnect
     
     func disconnect() {
@@ -149,10 +156,8 @@ extension MQTTManager: CocoaMQTTDelegate {
     }
     
     func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16) {
-        guard let payloadString = message.string,
-              let data = payloadString.data(using: .utf8) else { return }
-        
         let topic = message.topic
+        let payloadString = message.string ?? "(binary data)"
         
         // Store every from-car/ message for the Car Info view
         if topic.hasPrefix("from-car/") {
@@ -169,19 +174,20 @@ extension MQTTManager: CocoaMQTTDelegate {
                     self.messageLog.removeFirst(self.messageLog.count - 100)
                 }
             }
+            print("[MQTT] Received from-car message on \(topic): \(payloadString)")
         }
         
         // Parse GPS specifically for the car coordinate on the map
-        if topic == MQTTTopic.gpsInfo {
-            if let gpsInfo = try? JSONDecoder().decode(GPSInfo.self, from: data) {
-                DispatchQueue.main.async {
-                    self.carCoordinate = CLLocationCoordinate2D(
-                        latitude: gpsInfo.latitude,
-                        longitude: gpsInfo.longitude
-                    )
-                }
-                print("[MQTT] Received GPS: \(gpsInfo.latitude), \(gpsInfo.longitude)")
+        if topic == MQTTTopic.gpsInfo,
+           let data = payloadString.data(using: .utf8),
+           let gpsInfo = try? JSONDecoder().decode(GPSInfo.self, from: data) {
+            DispatchQueue.main.async {
+                self.carCoordinate = CLLocationCoordinate2D(
+                    latitude: gpsInfo.latitude,
+                    longitude: gpsInfo.longitude
+                )
             }
+            print("[MQTT] Received GPS: \(gpsInfo.latitude), \(gpsInfo.longitude)")
         }
     }
     
