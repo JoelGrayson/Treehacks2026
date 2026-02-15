@@ -88,7 +88,7 @@ struct WaitingForCarView: View {
             // Destination marker
             Annotation(destinationName ?? "Destination", coordinate: destinationCoord) {
                 VStack(spacing: 2) {
-                    Text(destinationName ?? "Destination")
+                    Text("Destination: \(destinationName ?? "Selected")")
                         .font(.caption)
                         .fontWeight(.medium)
                         .padding(.horizontal, 10)
@@ -104,9 +104,13 @@ struct WaitingForCarView: View {
             // Pickup marker
             Annotation(pickupName ?? "Pickup Location", coordinate: pickupCoord) {
                 VStack(spacing: 2) {
-                    Text(pickupName ?? "Pickup Location")
+                    Text(pickupName ? "Pickup: \(pickupName)" : "Pickup Location")
                         .font(.caption)
                         .fontWeight(.medium)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color(.systemGray5))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
                     
                     blueDot
                 }

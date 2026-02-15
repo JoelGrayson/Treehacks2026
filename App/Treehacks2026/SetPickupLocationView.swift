@@ -123,6 +123,29 @@ struct SetPickupLocationView: View {
                 // Fixed center pin -- pan the map to move it
                 Map(position: $cameraPosition) {
                     UserAnnotation()
+                    
+                    // Destination marker
+                    Annotation("Destination", coordinate: destinationCoordinate) {
+                        VStack(spacing: 2) {
+                            Text("Destination: \(destinationName ?? "Selected")")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color(.systemGray5))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                            
+                            Circle()
+                                .fill(.blue)
+                                .frame(width: 22, height: 22)
+                                .overlay(
+                                    Circle()
+                                        .fill(.white)
+                                        .frame(width: 9, height: 9)
+                                )
+                        }
+                    }
+                    .annotationTitles(.hidden)
                 }
                     .mapStyle(.standard)
                     .onMapCameraChange { context in
