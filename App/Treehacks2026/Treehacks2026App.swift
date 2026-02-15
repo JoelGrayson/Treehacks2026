@@ -36,10 +36,28 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
 struct Treehacks2026App: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()
                 .onAppear {
                     LocationManager.shared.requestPermission()
                     MQTTManager.shared.connect()
+                }
+        }
+    }
+}
+
+// MARK: - Tab View
+
+struct MainTabView: View {
+    var body: some View {
+        TabView {
+            ContentView()
+                .tabItem {
+                    Label("Order", systemImage: "car.fill")
+                }
+            
+            CarInfoView()
+                .tabItem {
+                    Label("Car Info", systemImage: "antenna.radiowaves.left.and.right")
                 }
         }
     }

@@ -19,6 +19,16 @@ let brokerPort: UInt16 = 1883
 enum MQTTTopic {
     static let commandCar = "from-phone/command-car"
     static let gpsInfo = "from-car/gps-info"
+    static let fromCarWildcard = "from-car/#"
+}
+
+// MARK: - Received MQTT Message
+
+struct MQTTReceivedMessage: Identifiable {
+    let id = UUID()
+    let topic: String
+    let payload: String
+    let timestamp: Date
 }
 
 // MARK: - Codable Payloads
@@ -50,6 +60,10 @@ class MQTTManager: NSObject {
     // Published state
     var carCoordinate: CLLocationCoordinate2D?
     var isConnected = false
+    
+    // Live data from from-car/ topics
+    var latestMessages: [String: MQTTReceivedMessage] = [:]  // keyed by topic
+    var messageLog: [MQTTReceivedMessage] = []  // chronological log (capped)
     
     private var mqtt: CocoaMQTT?
     
@@ -126,18 +140,39 @@ extension MQTTManager: CocoaMQTTDelegate {
             isConnected = true
             print("[MQTT] Connected successfully! Client ID: \(mqtt.clientID)")
             
-            // Subscribe to GPS info from the car
-            mqtt.subscribe(MQTTTopic.gpsInfo, qos: .qos1)
-            print("[MQTT] Subscribing to \(MQTTTopic.gpsInfo)")
+            // Subscribe to all from-car/ topics (includes gps-info and any others)
+            mqtt.subscribe(MQTTTopic.fromCarWildcard, qos: .qos1)
+            print("[MQTT] Subscribing to \(MQTTTopic.fromCarWildcard)")
         } else {
             print("[MQTT] Connection REJECTED: \(ack)")
         }
     }
     
     func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16) {
-        guard let data = message.string?.data(using: .utf8) else { return }
+        guard let payloadString = message.string,
+              let data = payloadString.data(using: .utf8) else { return }
         
-        if message.topic == MQTTTopic.gpsInfo {
+        let topic = message.topic
+        
+        // Store every from-car/ message for the Car Info view
+        if topic.hasPrefix("from-car/") {
+            let received = MQTTReceivedMessage(
+                topic: topic,
+                payload: payloadString,
+                timestamp: Date()
+            )
+            DispatchQueue.main.async {
+                self.latestMessages[topic] = received
+                self.messageLog.append(received)
+                // Cap the log at 100 entries
+                if self.messageLog.count > 100 {
+                    self.messageLog.removeFirst(self.messageLog.count - 100)
+                }
+            }
+        }
+        
+        // Parse GPS specifically for the car coordinate on the map
+        if topic == MQTTTopic.gpsInfo {
             if let gpsInfo = try? JSONDecoder().decode(GPSInfo.self, from: data) {
                 DispatchQueue.main.async {
                     self.carCoordinate = CLLocationCoordinate2D(
