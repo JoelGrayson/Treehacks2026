@@ -21,12 +21,7 @@ struct SetPickupLocationView: View {
         MKCoordinateRegion(center: stanfordCenter, latitudinalMeters: 1000, longitudinalMeters: 1000)
     )
     
-    let recommendedPickups = [
-        "Tresidder",
-        "Lakeside",
-        "ESIII (SSI Entrance)",
-        "Stanford D-School"
-    ]
+    let recommendedPickups = recommendedLocations
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -169,16 +164,16 @@ struct SetPickupLocationView: View {
                     .padding(.top, 24)
                 
                 VStack(alignment: .leading, spacing: 0) {
-                    ForEach(recommendedPickups, id: \.self) { pickup in
+                    ForEach(recommendedPickups) { pickup in
                         NavigationLink {
                             WaitingForCarView(
                                 destinationName: destinationName,
-                                pickupName: pickup,
+                                pickupName: pickup.name,
                                 destinationCoord: destinationCoordinate,
-                                pickupCoord: pinCoordinate
+                                pickupCoord: pickup.coordinate
                             )
                         } label: {
-                            Text(pickup)
+                            Text(pickup.name)
                                 .font(.subheadline)
                                 .foregroundColor(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)

@@ -50,6 +50,21 @@ class AddressSearchCompleter: NSObject, MKLocalSearchCompleterDelegate {
 // Stanford campus center (reusable)
 let stanfordCenter = CLLocationCoordinate2D(latitude: 37.42871908539299, longitude: -122.17590176790549)
 
+// MARK: - Recommended Locations
+
+struct RecommendedLocation: Identifiable {
+    let id = UUID()
+    let name: String
+    let coordinate: CLLocationCoordinate2D
+}
+
+let recommendedLocations: [RecommendedLocation] = [
+    RecommendedLocation(name: "Tresidder", coordinate: CLLocationCoordinate2D(latitude: 37.42469641302641, longitude: -122.17095100502956)),
+    RecommendedLocation(name: "Lakeside", coordinate: CLLocationCoordinate2D(latitude: 37.42587412867754, longitude: -122.17631716496038)),
+    RecommendedLocation(name: "ESIII (SSI Entrance)", coordinate: CLLocationCoordinate2D(latitude: 37.42757985311627, longitude: -122.17447190324197)),
+    RecommendedLocation(name: "Stanford D-School", coordinate: CLLocationCoordinate2D(latitude: 37.42603924794793, longitude: -122.1718639572872)),
+]
+
 struct SetDestinationView: View {
     @State private var searchText = ""
     @FocusState private var isSearchFocused: Bool
@@ -60,12 +75,7 @@ struct SetDestinationView: View {
         MKCoordinateRegion(center: stanfordCenter, latitudinalMeters: 1000, longitudinalMeters: 1000)
     )
     
-    let recommendedDestinations = [
-        "Tresidder",
-        "Lakeside",
-        "ESIII (SSI Entrance)",
-        "Stanford D-School"
-    ]
+    let recommendedDestinations = recommendedLocations
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -204,14 +214,14 @@ struct SetDestinationView: View {
                     .padding(.top, 24)
                 
                 VStack(alignment: .leading, spacing: 0) {
-                    ForEach(recommendedDestinations, id: \.self) { destination in
+                    ForEach(recommendedDestinations) { destination in
                         NavigationLink {
                             SetPickupLocationView(
-                                destinationName: destination,
-                                destinationCoordinate: stanfordCenter
+                                destinationName: destination.name,
+                                destinationCoordinate: destination.coordinate
                             )
                         } label: {
-                            Text(destination)
+                            Text(destination.name)
                                 .font(.subheadline)
                                 .foregroundColor(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
