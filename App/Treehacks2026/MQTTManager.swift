@@ -18,7 +18,10 @@ let brokerPort: UInt16 = 1883
 
 enum MQTTTopic {
     static let commandCar = "from-phone/command-car"
+    static let startRide = "from-phone/start-ride"
     static let gpsInfo = "from-car/gps-info"
+    static let carArrived = "from-car/car-arrived"
+    static let rideFinished = "from-car/ride-finished"
     static let fromCarWildcard = "from-car/#"
 }
 
@@ -60,6 +63,8 @@ class MQTTManager: NSObject {
     // Published state
     var carCoordinate: CLLocationCoordinate2D?
     var isConnected = false
+    var carArrived = false
+    var rideFinished = false
     
     // Live data from from-car/ topics
     var latestMessages: [String: MQTTReceivedMessage] = [:]  // keyed by topic
@@ -131,6 +136,26 @@ class MQTTManager: NSObject {
         print("[MQTT] Published raw message to \(topic): \(jsonString)")
     }
     
+    // MARK: - Publish start ride
+    
+    func sendStartRide() {
+        let payload: [String: Any] = [
+            "timestamp": Date().timeIntervalSince1970
+        ]
+        guard let data = try? JSONSerialization.data(withJSONObject: payload),
+              let jsonString = String(data: data, encoding: .utf8) else { return }
+        
+        mqtt?.publish(MQTTTopic.startRide, withString: jsonString, qos: .qos1, retained: false)
+        print("[MQTT] Published start-ride to \(MQTTTopic.startRide)")
+    }
+    
+    // MARK: - Reset ride state
+    
+    func resetRideState() {
+        carArrived = false
+        rideFinished = false
+    }
+    
     // MARK: - Disconnect
     
     func disconnect() {
@@ -188,6 +213,22 @@ extension MQTTManager: CocoaMQTTDelegate {
                 )
             }
             print("[MQTT] Received GPS: \(gpsInfo.latitude), \(gpsInfo.longitude)")
+        }
+        
+        // Car arrived at pickup
+        if topic == MQTTTopic.carArrived {
+            DispatchQueue.main.async {
+                self.carArrived = true
+            }
+            print("[MQTT] Car arrived at pickup")
+        }
+        
+        // Ride finished
+        if topic == MQTTTopic.rideFinished {
+            DispatchQueue.main.async {
+                self.rideFinished = true
+            }
+            print("[MQTT] Ride finished")
         }
     }
     

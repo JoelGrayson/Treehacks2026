@@ -33,8 +33,12 @@ struct WaitingForCarView: View {
         MKCoordinateRegion(center: stanfordCenter, latitudinalMeters: 800, longitudinalMeters: 800)
     )
     
-    @State private var carCoord = CLLocationCoordinate2D(latitude: 37.4280, longitude: -122.1760)
     @State private var route: MKRoute?
+    
+    // Car position derived from MQTT GPS data
+    private var carCoord: CLLocationCoordinate2D {
+        MQTTManager.shared.carCoordinate ?? pickupCoord
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -54,24 +58,23 @@ struct WaitingForCarView: View {
         .navigationTitle("")
         .navigationBarBackButtonHidden(true)
         .onAppear {
-            // Send order via MQTT
+            // Reset ride flags and send order via MQTT
+            MQTTManager.shared.resetRideState()
             MQTTManager.shared.sendOrder(
                 pickupCoordinate: pickupCoord,
                 pickupName: pickupName,
                 destinationCoordinate: destinationCoord,
                 destinationName: destinationName
             )
-            
-            // Initialize car position at pickup while waiting for GPS
-            carCoord = pickupCoord
-            
-            startApproachingTimer()
         }
-        .onChange(of: MQTTManager.shared.carCoordinate?.latitude) { _, _ in
-            if let newCoord = MQTTManager.shared.carCoordinate {
-                withAnimation(.easeInOut(duration: 1.0)) {
-                    carCoord = newCoord
-                }
+        .onChange(of: MQTTManager.shared.carArrived) { _, arrived in
+            if arrived && phase == .approaching {
+                phase = .arrived
+            }
+        }
+        .onChange(of: MQTTManager.shared.rideFinished) { _, finished in
+            if finished && (phase == .driving) {
+                phase = .reachedDestination
             }
         }
         .task {
@@ -146,27 +149,6 @@ struct WaitingForCarView: View {
         .mapStyle(.standard)
     }
     
-    // MARK: - Update car position based on phase
-    
-    private func updateCarPosition() {
-        withAnimation(.easeInOut(duration: 1.0)) {
-            switch phase {
-            case .approaching:
-                carCoord = CLLocationCoordinate2D(latitude: 37.4280, longitude: -122.1760)
-            case .arrived:
-                carCoord = pickupCoord
-            case .driving:
-                // Midway between pickup and destination
-                carCoord = CLLocationCoordinate2D(
-                    latitude: (pickupCoord.latitude + destinationCoord.latitude) / 2,
-                    longitude: (pickupCoord.longitude + destinationCoord.longitude) / 2
-                )
-            case .reachedDestination:
-                carCoord = destinationCoord
-            }
-        }
-    }
-    
     // MARK: - Blue dot component
     
     private var blueDot: some View {
@@ -189,7 +171,7 @@ struct WaitingForCarView: View {
                 Text("Car approaching")
                     .font(.title3)
                     .fontWeight(.medium)
-                Text("100 feet away")
+                Text("Waiting for car to arrive at pickup...")
                     .font(.body)
                     .foregroundColor(.secondary)
                 
@@ -199,9 +181,8 @@ struct WaitingForCarView: View {
                     .fontWeight(.medium)
                 
                 Button {
+                    MQTTManager.shared.sendStartRide()
                     phase = .driving
-                    updateCarPosition()
-                    startDrivingTimer()
                 } label: {
                     Text("Start Driving")
                         .font(.headline)
@@ -213,10 +194,10 @@ struct WaitingForCarView: View {
                 }
                 
             case .driving:
-                Text("Car arrived")
+                Text("Driving to destination")
                     .font(.title3)
                     .fontWeight(.medium)
-                Text("40 feet away")
+                Text("Waiting for car to arrive...")
                     .font(.body)
                     .foregroundColor(.secondary)
                 
@@ -259,21 +240,6 @@ struct WaitingForCarView: View {
         }
     }
     
-    // MARK: - Timers
-    
-    private func startApproachingTimer() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            phase = .arrived
-            updateCarPosition()
-        }
-    }
-    
-    private func startDrivingTimer() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            phase = .reachedDestination
-            updateCarPosition()
-        }
-    }
 }
 
 #Preview {
